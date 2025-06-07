@@ -1,0 +1,6 @@
+outs:
+- md5: 5e6ab97b3e8f28cc3081e17cc4877ec9.dir
+  size: 734416544
+  nfiles: 1600
+  hash: md5
+  path: FSDKaggle2018.audio_test

@@ -1,0 +1,8 @@
+num_classes: 41
+
+input_shape: [128, 128, 1]
+
+# for saving models
+model_local_path: models
+save_top_k: 2
+every_n_epochs: 1

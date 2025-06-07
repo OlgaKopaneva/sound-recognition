@@ -1,0 +1,6 @@
+outs:
+- md5: a7831f6298267c5fc399c8f09a8b3e0f.dir
+  size: 535090
+  nfiles: 2
+  hash: md5
+  path: FSDKaggle2018.meta

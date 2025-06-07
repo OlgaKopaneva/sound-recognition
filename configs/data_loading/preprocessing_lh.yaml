@@ -1,0 +1,9 @@
+folder: "LH"
+sampling_rate: 44100
+duration: 4
+hop_length: 882
+fmin: 20
+fmax: 22050
+n_mels: 128
+n_fft: 2560
+audio_split: "head"

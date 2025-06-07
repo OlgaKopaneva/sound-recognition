@@ -185,3 +185,6 @@ wandb
 
 lightning_logs/
 data/*
+!/data/*.dvc
+outputs/
+mlruns/

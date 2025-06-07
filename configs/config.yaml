@@ -1,0 +1,6 @@
+defaults:
+  - data_loading@data_loading: preprocessing_x
+  - model: model
+  - training: training_x
+  - logging: logging
+  - inference: inference

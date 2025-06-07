@@ -1,0 +1,12 @@
+label: wandb
+
+# Wandb
+project: sound-recognition
+name: main
+save_dir: "."
+
+# MLFlow
+experiment_name: sound-recognition
+run_name: main
+mlflow_save_dir: "."
+tracking_uri: http://127.0.0.1:8080

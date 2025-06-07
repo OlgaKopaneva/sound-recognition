@@ -1,0 +1,9 @@
+folder: "X"
+sampling_rate: 26000
+duration: 6
+hop_length: 520
+fmin: 20
+fmax: 13000
+n_mels: 48
+n_fft: 960
+audio_split: "dont_crop"

@@ -1,0 +1,6 @@
+outs:
+- md5: bdf8adeb8b3bfa5d176d905d9a67ea5c.dir
+  size: 5671914952
+  nfiles: 9473
+  hash: md5
+  path: FSDKaggle2018.audio_train
