@@ -1,0 +1,28 @@
+[project]
+name = "sound-recognition"
+version = "0.1.0"
+description = "audio tagging, recognises audio and maps it to a category from a list of 41 options (Google AudioSet ontology)"
+authors = [
+    {name = "OlgaKopaneva",email = "olg-kopaneva@yandex.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+packages = [
+    { include = "sound_recognition", from = "." }
+]
+
+dependencies = [
+    "torch (>=2.7.1,<3.0.0)",
+    "pytorch-lightning (>=2.5.1.post0,<3.0.0)",
+    "librosa (>=0.11.0,<0.12.0)",
+    "hydra-core (>=1.3.2,<2.0.0)",
+    "pre-commit (>=4.2.0,<5.0.0)",
+    "mlflow (>=2.22.1,<3.0.0)",
+    "dvc (>=3.60.0,<4.0.0)",
+    "dvc[gdrive] (>=3.60.0,<4.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
