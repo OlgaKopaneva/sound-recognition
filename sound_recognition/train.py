@@ -24,9 +24,9 @@ def main(config: DictConfig):
 
     loggers = [
         MLFlowLogger(
-            experiment_name="cats-and-dogs",
-            run_name="conv-classifier",
-            save_dir=".",
+            experiment_name="sound-recognition",
+            run_name="main",
+            save_dir="./mlruns",
             tracking_uri="http://127.0.0.1:8080",
         )
     ]
@@ -49,7 +49,7 @@ def main(config: DictConfig):
     )
 
     trainer = pl.Trainer(
-        max_epochs=config["training"]["num_epochs"],
+        max_epochs=config["training"]["epochs"],
         log_every_n_steps=1,  # to resolve warnings
         accelerator="auto",
         devices="auto",

@@ -1,6 +1,6 @@
 # Распознавание звуков
 
-### Автор: Копанева Ольга
+#### Автор: Копанева Ольга
 
 ## Постановка задачи
 
@@ -40,51 +40,59 @@ Precision @ 3 (mAP@3)** (принимает до трех ранжированн
 месте). Т.к. данная метка часто используется для измерения точности детекции, то
 она подходит к поставленной задаче.
 
-Baseline, описанный в статье , достигает mAP@3 = 70% Максимальный результат на
-Leaderboard достигает mAP@3 = 95,3%
+Baseline, описанный в статье[1], достигает **mAP@3 = 70%** Максимальный
+результат на Leaderboard достигает **mAP@3 = 95,3%**
 [Решение](https://www.kaggle.com/code/daisukelab/freesound-dataset-kaggle-2018-solution/notebook),
-которое взято за основу проекта выдает mAP@3 = 91,7%
+которое взято за основу проекта, выдает **mAP@3 = 91,7%**
+
+[1]: Eduardo Fonseca, Manoj Plakal, Frederic Font, Daniel P. W. Ellis, Xavier
+Favory, Jordi Pons, Xavier Serra. "General-purpose Tagging of Freesound Audio
+with AudioSet Labels: Task Description, Dataset, and Baseline". Proceedings of
+the DCASE 2018 Workshop (2018) -
+[https://arxiv.org/abs/1807.09902](https://arxiv.org/abs/1807.09902)
 
 ## Данные
 
-Будем использовать датасет указанного выше соревнования «Freesound
-General-Purpose Audio Tagging Challenge». Актуальная ссылка на датасет:
+Будем использовать датасет указанного выше соревнования
+[«Freesound General-Purpose Audio Tagging Challenge»](https://www.kaggle.com/competitions/freesound-audio-tagging/data).
+Актуальная ссылка на датасет:
 [http://zenodo.org/records/2552860#.XFD05fwo-V4](http://zenodo.org/records/2552860#.XFD05fwo-V4)
 
 Суммарно датасет содержит 11073 аудиофайлов (9473 train, 1600 test) с
 присвоенными тегами (при этом для 3710 фрагментов метки проверены вручную, т.е.
 достоверны, остальные размечены автоматически и могут содержать ошибки, уровень
 точности – 60-70% согласно описанию датасета). Все аудиосэмплы в этом наборе
-данных взяты из Freesound и представлены в виде несжатых аудиофайлов формата WAV
-(PCM) 16 бит, 44,1 кГц, mono, длительность каждого фрагмента от 300 мс до 30 с.
+данных взяты из [Freesound](https://freesound.org/) и представлены в виде
+несжатых аудиофайлов формата WAV (PCM) 16 бит, 44,1 кГц, mono, длительность
+каждого фрагмента от 300 мс до 30 с.
 
-Потенциальная проблема – неточность изначально присвоенных меток, что необходимо
-учитывать в работе.
+**Потенциальная проблема** – неточность изначально присвоенных меток, что
+необходимо учитывать в работе.
 
 ## Моделирование
 
 ### Бейзлайн
 
-Baseline, описанный в статье , предполагает использование 3-х слойной CNN,
+Baseline, описанный в статье [1], предполагает использование 3-х слойной CNN,
 которой на вход подается преобразованный в log-mel спектрограмму звук, и в конце
 слой softmax для классификации к одному из 41 тегов. Чтобы не ошибиться в
 переводе терминологии, описание преобразований исходного звука приведу в формате
-цитаты из указанной статьи: «Incoming audio is divided into overlapping windows
+цитаты из указанной статьи: _«Incoming audio is divided into overlapping windows
 of size 0.25s with a hop of 0.125s. These windows are decomposed with a
 short-time Fourier transform using 25ms windows every 10ms. The resulting
 spectrogram is mapped into 64 mel-spaced frequency bins, and the magnitude of
 each bin is log-transformed after adding a small offset to avoid numerical
 issues. Predictions are obtained for a clip of arbitrary length by running the
 model over 0.25s-wide windows every 0.125s, and averaging all the window-level
-predictions to obtain a clip-level prediction»
+predictions to obtain a clip-level prediction»_
 
 ### Основная модель
 
 Основная модель будет базироваться на ноутбуке:
-https://www.kaggle.com/code/daisukelab/freesound-dataset-kaggle-2018-solution
+[https://www.kaggle.com/code/daisukelab/freesound-dataset-kaggle-2018-solution](https://www.kaggle.com/code/daisukelab/freesound-dataset-kaggle-2018-solution)
 
-Предложенная в ноутбуке стратегия решения представляет собой ансамбль двух
-подходов:
+Предложенная в ноутбуке стратегия решения представляет собой **ансамбль двух
+подходов:**
 
 1. LH: используется самое высокое качество, но только для начальной части
    звуков;
@@ -92,24 +100,43 @@ https://www.kaggle.com/code/daisukelab/freesound-dataset-kaggle-2018-solution
    качеством.
 
 Из специфического в обработке данных следует отметить использование
-специализированной библиотеки librosa , служащей для работы с аудио и музыкой.
-Именно эта библиотека строит спектрограммы.
+специализированной библиотеки
+[librosa](https://librosa.org/doc/latest/index.html), служащей для работы с
+аудио и музыкой. Именно эта библиотека строит спектрограммы.
 
-Сама модель обучения в исходном ноутбуке использует keras, переложена в рамках
-проекта на pytorch.
+Сама модель обучения в исходном ноутбуке использует keras, **переложена в рамках
+проекта на pytorch.** Архитектура модели базируется на AlexNet (соревнование и,
+соответственно, решение достаточно старые).
 
 ## Setup
 
-poetry install
+Для управления зависимостями использован
+[poetry](https://python-poetry.org/docs/#installing-with-the-official-installer).
+Необходимые зависимости прописаны в файле [pyproject.toml](pyproject.toml). Для
+установки зависимостей достаточно установить poetry по инструкции:
+[https://python-poetry.org/docs/#installing-with-the-official-installer](https://python-poetry.org/docs/#installing-with-the-official-installer)
+и выполнить `poetry install`
 
 ## Train
 
-pip install dvc dvc pull
+**Получение данных:** Данные хранятся в локальном хранилище, в репозитории их
+dvc образы.
 
-# Одно обучение (X-подход)
+Для подтягивания данных (если доступно локальное хранилище): `dvc pull` Если не
+доступно: #TODO download_data()
 
-python train.py data_loading=preprocessing_x training=x
+**Обучение:**
 
-# Или другой подход (LH-подход)
+_Первый проход (X-подход)_ (описание - см. выше в разделе про модель)
 
-python train.py data_loading=preprocessing_lh training=lh
+Перед запуском зайти в [configs\model\model.yaml](configs\model\model.yaml) и
+включить соответсвующую размерность сети
+
+`python sound_recognition/train.py data_loading@preprocessing=preprocessing_x training=training_x`
+
+_Второй проход (LH-подход)_
+
+Перед запуском зайти в [configs\model\model.yaml](configs\model\model.yaml) и
+включить соответсвующую размерность сети
+
+`python sound_recognition/train.py data_loading@preprocessing=preprocessing_lh training=training_lh`

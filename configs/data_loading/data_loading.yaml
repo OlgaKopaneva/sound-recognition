@@ -1,7 +1,6 @@
+# предполагается, что после dvc pull файлы лежат здесь:
+
 data_dir: data/FSDKaggle2018.audio_train
 meta_path: data/FSDKaggle2018.meta/train_post_competition.csv
 test_data_dir: data/FSDKaggle2018.audio_test
 test_meta_path: data/FSDKaggle2018.meta/test_post_competition_scoring_clips.csv
-
-batch_size: 32
-num_workers: 4

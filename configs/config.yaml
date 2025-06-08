@@ -1,6 +1,13 @@
 defaults:
-  - data_loading@data_loading: preprocessing_x
+  - _self_
+  - data_loading: data_loading
+  - data_loading@preprocessing: preprocessing_x
   - model: model
   - training: training_x
   - logging: logging
-  - inference: inference
+  #- inference: inference
+
+hydra:
+  run:
+    dir: ./outputs
+  output_subdir: null

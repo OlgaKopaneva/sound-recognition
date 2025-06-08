@@ -1,8 +1,10 @@
 import librosa
 import numpy as np
+from omegaconf import OmegaConf
 
 
 def auto_complete_conf(conf):
+    OmegaConf.set_struct(conf, False)
     conf.samples = conf.sampling_rate * conf.duration
     conf.dims = (
         conf.n_mels,
@@ -13,17 +15,17 @@ def auto_complete_conf(conf):
 
 
 def read_audio(conf, pathname):
-    y, _ = librosa.load(pathname, sr=conf.sampling_rate)
-    if len(y) > 0:
-        y, _ = librosa.effects.trim(y)
-    if len(y) > conf.samples:
+    audio, _ = librosa.load(pathname, sr=conf.sampling_rate)
+    if len(audio) > 0:
+        audio, _ = librosa.effects.trim(audio)
+    if len(audio) > conf.samples:
         if conf.audio_split == "head":
-            y = y[: conf.samples]
+            audio = audio[: conf.samples]
     else:
-        padding = conf.samples - len(y)
+        padding = conf.samples - len(audio)
         offset = padding // 2
-        y = np.pad(y, (offset, conf.samples - len(y) - offset), "constant")
-    return y
+        audio = np.pad(audio, (offset, conf.samples - len(audio) - offset), "constant")
+    return audio
 
 
 def audio_to_melspectrogram(conf, audio):
@@ -40,8 +42,8 @@ def audio_to_melspectrogram(conf, audio):
 
 
 def read_as_melspectrogram(conf, pathname):
-    x = read_audio(conf, pathname)
-    return audio_to_melspectrogram(conf, x)
+    audio_file = read_audio(conf, pathname)
+    return audio_to_melspectrogram(conf, audio_file)
 
 
 def split_long_data(conf, melspec):
@@ -49,7 +51,6 @@ def split_long_data(conf, melspec):
     one_len = conf.dims[1]
     step = int(one_len * 0.9)
     min_len = int(one_len * 0.2)
-
     for idx in range(L // step):
         cur = step * idx
         if one_len <= L - cur:
@@ -60,14 +61,17 @@ def split_long_data(conf, melspec):
 
 
 def convert_X(df, conf, audio_dir):
-    X, idx_map = [], []
+    # Convert all files listed on df.fname
+    # Then generates data (contains mel-spectrograms)
+    # and index mapping to original sample order
+    data, idx_map = [], []
     for i, fname in enumerate(df.fname):
         mels = read_as_melspectrogram(conf, audio_dir / fname)
         for chunk in split_long_data(conf, mels):
-            X.append(np.expand_dims(chunk, axis=-1))
+            data.append(np.expand_dims(chunk, axis=-1))
             idx_map.append(i)
-    return np.array(X), np.array(idx_map)
+    return np.array(data), np.array(idx_map)
 
 
-def convert_y_train(idx_map, y):
-    return np.array([y[i] for i in idx_map])
+def convert_y_train(idx_map, labels):
+    return np.array([labels[i] for i in idx_map])

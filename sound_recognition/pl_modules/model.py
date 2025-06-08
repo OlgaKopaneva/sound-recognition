@@ -1,3 +1,4 @@
+import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
@@ -13,11 +14,12 @@ class AlexNetLightning(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
         self.lr = lr
+        self.validation_preds = []
 
-        c, h, w = input_shape
+        input, hide, output = input_shape
 
         self.features = nn.Sequential(
-            nn.Conv2d(c, 48, kernel_size=11, stride=(2, 3), padding=5),
+            nn.Conv2d(input, 48, kernel_size=11, stride=(2, 3), padding=5),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=3, stride=(1, 2)),
             nn.BatchNorm2d(48),
@@ -37,7 +39,7 @@ class AlexNetLightning(pl.LightningModule):
 
         self.flatten = nn.Flatten()
         self.classifier = nn.Sequential(
-            nn.Linear(self._get_flattened_size(c, h, w), 256),
+            nn.Linear(self._get_flattened_size(input, hide, output), 256),
             nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(256, 256),
@@ -46,32 +48,56 @@ class AlexNetLightning(pl.LightningModule):
             nn.Linear(256, num_classes),
         )
 
-    def _get_flattened_size(self, c, h, w):
-        x = torch.zeros(1, c, h, w)
-        x = self.features(x)
-        return x.numel()
+    def _get_flattened_size(self, input, hide, output):
+        data = torch.zeros(1, input, hide, output)
+        data = self.features(data)
+        return data.numel()
 
-    def forward(self, x):
-        x = self.features(x)
-        x = self.flatten(x)
-        return self.classifier(x)
+    def forward(self, data):
+        data = self.features(data)
+        data = self.flatten(data)
+        return self.classifier(data)
 
     def training_step(self, batch, batch_idx):
-        x, y = batch
-        logits = self(x)
-        loss = F.cross_entropy(logits, y)
-        acc = (logits.argmax(1) == y).float().mean()
+        data, labels = batch
+        logits = self(data)
+        loss = F.cross_entropy(logits, labels)
+        acc = (logits.argmax(1) == labels).float().mean()
         self.log("train_loss", loss)
         self.log("train_acc", acc)
         return loss
 
+    def map_k(self, y_true, y_pred, k=3):
+        correct = 0
+        for true, pred in zip(y_true, y_pred):
+            top_k = np.argsort(pred)[::-1][:k]
+            if true in top_k:
+                correct += 1 / (np.where(top_k == true)[0][0] + 1)
+        return correct / len(y_true)
+
     def validation_step(self, batch, batch_idx):
-        x, y = batch
-        logits = self(x)
-        loss = F.cross_entropy(logits, y)
-        acc = (logits.argmax(1) == y).float().mean()
+        data, labels = batch
+        logits = self(data)
+        loss = F.cross_entropy(logits, labels)
+        acc = (logits.argmax(1) == labels).float().mean()
+        map3 = self.map_k(labels, logits)
         self.log("val_loss", loss, prog_bar=True)
         self.log("val_acc", acc, prog_bar=True)
+        self.log("val_map3", map3, prog_bar=True)
+        self.validation_preds.append(logits.detach())
+        return {"val_loss": loss, "val_acc": acc, "val_map3": map3, "preds": logits}
+
+    def validation_epoch_end(self, outputs):
+        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
+        avg_acc = torch.stack([x["val_acc"] for x in outputs]).mean()
+        avg_map3 = torch.stack([x["val_map3"] for x in outputs]).mean()
+        self.log("val_loss_epoch", avg_loss)
+        self.log("val_acc_epoch", avg_acc)
+        self.log("val_map3_epoch", avg_map3)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr)
+
+    # def on_train_end(self):
+    #     val_preds = torch.cat(self.validation_preds, dim=0).cpu().numpy()
+    #     np.save(f"{self.output_dir}/train_pred_0.npy", val_preds)
