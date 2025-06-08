@@ -4,13 +4,12 @@ from omegaconf import DictConfig
 from pl_modules.datamodule import SoundDataModule
 from pl_modules.model import AlexNetLightning
 from pytorch_lightning.callbacks import (
-    DeviceStatsMonitor,
     EarlyStopping,
     LearningRateMonitor,
     ModelCheckpoint,
     RichModelSummary,
 )
-from pytorch_lightning.loggers import MLFlowLogger
+from pytorch_lightning.loggers import WandbLogger
 
 
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
@@ -23,17 +22,16 @@ def main(config: DictConfig):
     )
 
     loggers = [
-        MLFlowLogger(
-            experiment_name="sound-recognition",
-            run_name="main",
-            save_dir="./mlruns",
-            tracking_uri="http://127.0.0.1:8080",
+        WandbLogger(
+            project=config["logging"]["project"],
+            name=config["logging"]["name"],
+            save_dir=config["logging"]["save_dir"],
+            offline=True,
         )
     ]
 
     callbacks = [
         LearningRateMonitor(logging_interval="step"),
-        DeviceStatsMonitor(),
         RichModelSummary(max_depth=2),
         EarlyStopping(monitor="val_loss", patience=10),
     ]

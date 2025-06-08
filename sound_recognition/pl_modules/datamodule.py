@@ -14,6 +14,7 @@ class SoundDataModule(pl.LightningDataModule):
         super().__init__()
         self.config = config
         self.batch_size = config.training.batch_size
+        self.num_workers = config.training.num_workers
         self.conf = auto_complete_conf(self.config.preprocessing)
 
     def setup(self, stage=None):
@@ -24,12 +25,13 @@ class SoundDataModule(pl.LightningDataModule):
         label2int = {l: i for i, l in enumerate(labels)}
         self.num_classes = len(labels)
 
-        # Plain y_train label
+        # Plain y label
         plain_y_train = np.array([label2int[label] for label in df_train.label])
+        plain_y_test = np.array([label2int[label] for label in df_test.label])
 
         # Train data
         data_train, idx_train = convert_X(
-            df_train, self.conf, Path(self.config.data_dir)
+            df_train, self.conf, Path(self.config.data_loading.data_dir)
         )
         label_train = convert_y_train(idx_train, plain_y_train)
         self.train_dataset = TensorDataset(
@@ -39,12 +41,25 @@ class SoundDataModule(pl.LightningDataModule):
         # Test data
         self.test_fnames = df_test.fname.values
         data_test, idx_test = convert_X(
-            df_test, self.conf, Path(self.config.test_data_dir)
+            df_test, self.conf, Path(self.config.data_loading.test_data_dir)
         )
-        self.test_dataset = TensorDataset(torch.tensor(data_test).permute(0, 3, 1, 2))
+        label_test = convert_y_train(idx_test, plain_y_test)
+        self.test_dataset = TensorDataset(
+            torch.tensor(data_test).permute(0, 3, 1, 2), torch.tensor(label_test)
+        )
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True)
+        return DataLoader(
+            self.train_dataset,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            shuffle=True,
+        )
 
     def val_dataloader(self):
-        return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False)
+        return DataLoader(
+            self.test_dataset,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            shuffle=False,
+        )

@@ -40,8 +40,10 @@ Precision @ 3 (mAP@3)** (принимает до трех ранжированн
 месте). Т.к. данная метка часто используется для измерения точности детекции, то
 она подходит к поставленной задаче.
 
-Baseline, описанный в статье[1], достигает **mAP@3 = 70%** Максимальный
-результат на Leaderboard достигает **mAP@3 = 95,3%**
+Baseline, описанный в статье[1], достигает **mAP@3 = 70%**
+
+Максимальный результат на Leaderboard достигает **mAP@3 = 95,3%**
+
 [Решение](https://www.kaggle.com/code/daisukelab/freesound-dataset-kaggle-2018-solution/notebook),
 которое взято за основу проекта, выдает **mAP@3 = 91,7%**
 
@@ -55,6 +57,7 @@ the DCASE 2018 Workshop (2018) -
 
 Будем использовать датасет указанного выше соревнования
 [«Freesound General-Purpose Audio Tagging Challenge»](https://www.kaggle.com/competitions/freesound-audio-tagging/data).
+
 Актуальная ссылка на датасет:
 [http://zenodo.org/records/2552860#.XFD05fwo-V4](http://zenodo.org/records/2552860#.XFD05fwo-V4)
 
@@ -112,8 +115,10 @@ predictions to obtain a clip-level prediction»_
 
 Для управления зависимостями использован
 [poetry](https://python-poetry.org/docs/#installing-with-the-official-installer).
-Необходимые зависимости прописаны в файле [pyproject.toml](pyproject.toml). Для
-установки зависимостей достаточно установить poetry по инструкции:
+
+Необходимые зависимости прописаны в файле [pyproject.toml](pyproject.toml).
+
+Для установки зависимостей достаточно установить poetry по инструкции:
 [https://python-poetry.org/docs/#installing-with-the-official-installer](https://python-poetry.org/docs/#installing-with-the-official-installer)
 и выполнить `poetry install`
 
@@ -127,16 +132,24 @@ dvc образы.
 
 **Обучение:**
 
-_Первый проход (X-подход)_ (описание - см. выше в разделе про модель)
+_Первый подход (X-подход)_ (описание - см. выше в разделе про модель)
 
 Перед запуском зайти в [configs\model\model.yaml](configs\model\model.yaml) и
 включить соответсвующую размерность сети
 
 `python sound_recognition/train.py data_loading@preprocessing=preprocessing_x training=training_x`
 
-_Второй проход (LH-подход)_
+_Второй подход (LH-подход)_
 
 Перед запуском зайти в [configs\model\model.yaml](configs\model\model.yaml) и
 включить соответсвующую размерность сети
 
 `python sound_recognition/train.py data_loading@preprocessing=preprocessing_lh training=training_lh`
+
+Исходный проект предполагает в последствии смешать результаты обоих подходов
+(для этого можно воспользоваться
+[sound_recognition\ensamble.py](sound_recognition\ensamble.py)), но так как с
+технической стороной обучения этот процесс уже не связан, то такой запуск не
+проводился.
+
+## Production preparation

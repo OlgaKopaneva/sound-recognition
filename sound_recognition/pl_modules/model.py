@@ -78,6 +78,7 @@ class AlexNetLightning(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         data, labels = batch
         logits = self(data)
+        labels = labels.to(torch.long)
         loss = F.cross_entropy(logits, labels)
         acc = (logits.argmax(1) == labels).float().mean()
         map3 = self.map_k(labels, logits)
@@ -87,7 +88,7 @@ class AlexNetLightning(pl.LightningModule):
         self.validation_preds.append(logits.detach())
         return {"val_loss": loss, "val_acc": acc, "val_map3": map3, "preds": logits}
 
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self, outputs):
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
         avg_acc = torch.stack([x["val_acc"] for x in outputs]).mean()
         avg_map3 = torch.stack([x["val_map3"] for x in outputs]).mean()
@@ -97,7 +98,3 @@ class AlexNetLightning(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr)
-
-    # def on_train_end(self):
-    #     val_preds = torch.cat(self.validation_preds, dim=0).cpu().numpy()
-    #     np.save(f"{self.output_dir}/train_pred_0.npy", val_preds)

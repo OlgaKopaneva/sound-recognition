@@ -1,7 +1,7 @@
 num_classes: 41
 
 # for x_version
-input_shape: [48, 296, 1]
+input_shape: [1, 48, 300]
 
 # for lh_version
 #input_shape: [128, 200, 1]
