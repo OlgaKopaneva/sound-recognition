@@ -188,4 +188,5 @@ data/*
 !/data/*.dvc
 outputs/
 mlruns/
-models/
+models/*
+!models/*.dvc

@@ -26,7 +26,6 @@ def main(config: DictConfig):
             project=config["logging"]["project"],
             name=config["logging"]["name"],
             save_dir=config["logging"]["save_dir"],
-            offline=True,
         )
     ]
 

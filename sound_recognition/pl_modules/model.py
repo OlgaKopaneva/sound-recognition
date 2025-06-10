@@ -1,4 +1,3 @@
-import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
@@ -61,19 +60,21 @@ class AlexNetLightning(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         data, labels = batch
         logits = self(data)
+        labels = labels.to(torch.long)
         loss = F.cross_entropy(logits, labels)
         acc = (logits.argmax(1) == labels).float().mean()
         self.log("train_loss", loss)
         self.log("train_acc", acc)
         return loss
 
-    def map_k(self, y_true, y_pred, k=3):
-        correct = 0
-        for true, pred in zip(y_true, y_pred):
-            top_k = np.argsort(pred)[::-1][:k]
-            if true in top_k:
-                correct += 1 / (np.where(top_k == true)[0][0] + 1)
-        return correct / len(y_true)
+    # def map_k(self, logits, labels, k=3):
+    #     if logits.dim() == 1:
+    #         logits = logits.unsqueeze(1)
+    #     _, topk_preds = logits.topk(k, dim=1)
+    #     correct = (topk_preds == labels.unsqueeze(1)).float()
+    #     precision_at_k = correct.cumsum(dim=1) / torch.arange(1, k+1, device=logits.device).float()
+    #     avg_precision = (precision_at_k * correct).sum(dim=1) / correct.sum(dim=1).clamp(min=1)
+    #     return avg_precision
 
     def validation_step(self, batch, batch_idx):
         data, labels = batch
@@ -81,20 +82,12 @@ class AlexNetLightning(pl.LightningModule):
         labels = labels.to(torch.long)
         loss = F.cross_entropy(logits, labels)
         acc = (logits.argmax(1) == labels).float().mean()
-        map3 = self.map_k(labels, logits)
+        # map3 = self.map_k(labels, logits)
         self.log("val_loss", loss, prog_bar=True)
         self.log("val_acc", acc, prog_bar=True)
-        self.log("val_map3", map3, prog_bar=True)
+        # self.log("val_map3", map3, prog_bar=True)
         self.validation_preds.append(logits.detach())
-        return {"val_loss": loss, "val_acc": acc, "val_map3": map3, "preds": logits}
-
-    def on_validation_epoch_end(self, outputs):
-        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
-        avg_acc = torch.stack([x["val_acc"] for x in outputs]).mean()
-        avg_map3 = torch.stack([x["val_map3"] for x in outputs]).mean()
-        self.log("val_loss_epoch", avg_loss)
-        self.log("val_acc_epoch", avg_acc)
-        self.log("val_map3_epoch", avg_map3)
+        return {"val_loss": loss, "val_acc": acc, "preds": logits}
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr)
